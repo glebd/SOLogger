@@ -48,7 +48,7 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 - (void) dealloc;
 {		
 	[myFacility release]; myFacility = nil;
-	
+	[myFileDescriptors release];
 	myMainASLClient = nil;
 	
 	[super dealloc];
