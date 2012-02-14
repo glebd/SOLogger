@@ -17,7 +17,7 @@
 
 + (SOASLClient *) client;
 {
-	return [[[SOASLClient alloc] init] autorelease];
+	return [[SOASLClient alloc] init];
 }
 
 - (id) init;
@@ -40,7 +40,6 @@
 	NSLog(@"Deallocating %@ on %@ thread %@", self, ([currentThread isEqual:[NSThread mainThread]] ? @"main" : @"background"), currentThread);	
 #endif
 	
-	[super dealloc];
 }
 
 #pragma mark -

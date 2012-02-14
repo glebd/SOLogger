@@ -194,7 +194,7 @@ extern uint32_t SOLoggerDefaultASLOptions;
 Reference to the ASLClient used by the logger on the main thread.
 The logger will use separate ASLClient instances on each thread under which it executes.  For each new thread, its ASLClient will be a copy of the main thread's ASLClient.
 */
-@property (nonatomic, readonly) SOASLClient *mainASLClient;
+@property (unsafe_unretained, nonatomic, readonly) SOASLClient *mainASLClient;
 
 @end
 

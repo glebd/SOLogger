@@ -25,7 +25,7 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 
 + (SOLogger *) loggerForFacility:(NSString *)facility options:(uint32_t)options;
 {
-	SOLogger *logger = [[[SOLogger alloc] initWithFacility:facility options:options] autorelease];
+	SOLogger *logger = [[SOLogger alloc] initWithFacility:facility options:options];
 	return logger;
 }
 
@@ -47,11 +47,8 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 
 - (void) dealloc;
 {		
-	[myFacility release]; myFacility = nil;
-	[myFileDescriptors release];
+    myFacility = nil;
 	myMainASLClient = nil;
-	
-	[super dealloc];
 }
 
 
@@ -156,33 +153,33 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 
 - (void) messageWithLevel:(int)aslLevel prefix:(NSString *)prefix suffix:(NSString *)suffix message:(NSString *)text arguments:(va_list)argList;
 {
-	NSAutoreleasePool *pool = [NSAutoreleasePool new];
+	@autoreleasepool {
 	
-	NSString *message =  [[[NSString alloc] initWithFormat: text arguments: argList] autorelease];
-	
-	SOASLClient *client = [self currentThreadASLClient];
-	assert( [client isOpen] );
-	
-	NSMutableString *constructedMessage = [NSMutableString string];
-	if ( prefix ) [constructedMessage appendString:prefix];		
-	[constructedMessage appendString:message];
-	if ( suffix ) [constructedMessage appendString:suffix];
-	
-	aslmsg msg = asl_new(ASL_TYPE_MSG);
-	
-	const char *normalizedFacility = self.facility ? [self.facility UTF8String] : "com.apple.console";
-	asl_set( msg, ASL_KEY_FACILITY, normalizedFacility);
-	
-	asl_log([client asl_client], msg, aslLevel, "%s", [constructedMessage UTF8String]);
-	
-	asl_free( msg );
+		NSString *message =  [[NSString alloc] initWithFormat: text arguments: argList];
+		
+		SOASLClient *client = [self currentThreadASLClient];
+		assert( [client isOpen] );
+		
+		NSMutableString *constructedMessage = [NSMutableString string];
+		if ( prefix ) [constructedMessage appendString:prefix];		
+		[constructedMessage appendString:message];
+		if ( suffix ) [constructedMessage appendString:suffix];
+		
+		aslmsg msg = asl_new(ASL_TYPE_MSG);
+		
+		const char *normalizedFacility = self.facility ? [self.facility UTF8String] : "com.apple.console";
+		asl_set( msg, ASL_KEY_FACILITY, normalizedFacility);
+		
+		asl_log([client asl_client], msg, aslLevel, "%s", [constructedMessage UTF8String]);
+		
+		asl_free( msg );
 	
 #if SOASLLOGGER_DEBUG
 	NSThread *currentThread = [NSThread currentThread];
 	NSLog(@"%@ on %@ thread %@", client, ([currentThread isEqual:[NSThread mainThread]] ? @"main" : @"background"), currentThread);
 #endif
 	
-	[pool release];
+	}
 }
 
 
@@ -199,7 +196,7 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 		[self performSelectorOnMainThread:@selector(ASLClient:) withObject:nil waitUntilDone:YES];
 	}
 	
-	return [[myMainASLClient retain] autorelease];
+	return myMainASLClient;
 }
 
 // Return an ASL client connection that we should be using for the current thread. 
@@ -220,7 +217,7 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 		
 		// Create a new ASLClient instance and install it in the thread's cache of ASL clients.
 		
-		thisThreadASLClient = [[[SOASLClient alloc] init] autorelease];
+		thisThreadASLClient = [[SOASLClient alloc] init];
 		
 		// Lock us down while we access the logger's ivars.
 		@synchronized(self) 
@@ -247,7 +244,7 @@ static NSString * const ASLClientsKey = @"SOASLClients";
 		}
 	}
 	
-	return [[thisThreadASLClient retain] autorelease];
+	return thisThreadASLClient;
 }
 
 #pragma mark -
